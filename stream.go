@@ -131,6 +131,21 @@ func (s *Stream) WriteShort(status int64, data1 int64, data2 int64) error {
 	return s.Write([]Event{evt})
 }
 
+// WriteShorts writes a bunch of MIDI events of three bytes immediately to the output stream.
+func (s *Stream) WriteShorts(status int64, data1s []int64, data2s []int64) error {
+	evts := make([]Event, len(data1s))
+	timestamp := Timestamp(C.Pt_Time())
+	for i := range data1s {
+		evts[i] = Event{
+			Timestamp: timestamp,
+			Status:    status,
+			Data1:     data1s[i],
+			Data2:     data2s[i],
+		}
+	}
+	return s.Write(evts)
+}
+
 // WriteSysExBytes writes a system exclusive MIDI message given as a []byte to the output stream.
 func (s *Stream) WriteSysExBytes(when Timestamp, msg []byte) error {
 	return convertToError(C.Pm_WriteSysEx(unsafe.Pointer(s.pmStream), C.PmTimestamp(when), (*C.uchar)(unsafe.Pointer(&msg[0]))))
